@@ -3,7 +3,7 @@ drop view if exists order_202201_info_view;
 create view order_202201_info_view as
 select ppb.product_id
 ,sum(ppb.qty) sale_qty
-,sum(pbi.amt) gmv
+,sum(ppb.amt) gmv
 from erp.pos_bill_index pbi
 left join erp.pos_product_bill ppb on ppb.pos_bill_id = pbi.id
 where 1 = 1

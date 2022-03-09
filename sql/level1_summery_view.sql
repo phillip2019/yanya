@@ -58,7 +58,7 @@ left join (
     ,sum(sale_qty) sale_qty
     ,sum(gmv) gmv
     from sku_info_view suiv
-    inner join order_2022_info_view oiv on oiv.product_id = suiv.product_id
+    inner join order_202201_info_view oiv on oiv.product_id = suiv.product_id
     group by level1
 ) order_202201_tbl on order_202201_tbl.level1 = spu_tbl.level1
 -- 2022年02月销售情况
@@ -67,7 +67,7 @@ left join (
     ,sum(sale_qty) sale_qty
     ,sum(gmv) gmv
     from sku_info_view suiv
-    inner join order_2022_info_view oiv on oiv.product_id = suiv.product_id
+    inner join order_202202_info_view oiv on oiv.product_id = suiv.product_id
     group by level1
 ) order_202202_tbl on order_202202_tbl.level1 = spu_tbl.level1
 -- 2022年03月销售情况
@@ -76,7 +76,7 @@ left join (
     ,sum(sale_qty) sale_qty
     ,sum(gmv) gmv
     from sku_info_view suiv
-    inner join order_2022_info_view oiv on oiv.product_id = suiv.product_id
+    inner join order_202203_info_view oiv on oiv.product_id = suiv.product_id
     group by level1
 ) order_202203_tbl on order_202203_tbl.level1 = spu_tbl.level1
 ;
