@@ -37,7 +37,7 @@ from (
                          ), 1, 0)) sku_num
   from sku_info_view suiv
   left join stock_info_view skiv on skiv.product_id = suiv.product_id
-  left join order_2022_info_view oiv on oiv.product_id = suiv.product_id
+  left join order_3d_info_view oiv on oiv.product_id = suiv.product_id
   where 1 = 1
   and level1 not in ('优惠券类')
   group by level1
