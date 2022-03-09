@@ -4,6 +4,7 @@ drop view if exists erp.level1_summery_view;
 create view erp.level1_summery_view as
 select spu_tbl.level1
 ,coalesce(spu_num, 0) spu_num
+,coalesce(sku_num, 0) sku_num
 ,coalesce(stock_amt, 0) stock_amt
 ,coalesce(stock_qty, 0) stock_qty
 ,coalesce(order_2021_tbl.gmv, 0) gmv_2021
@@ -20,6 +21,8 @@ from (
   select level1
   ,count(distinct if(level3 not in ('淘汰', '淘汰类', '淘汰分类', '废弃', '废弃类', '淘汰款')
                          and level1 not in ('批发辅材', '优惠券', '特价区', '淘汰'), spu_code, null)) spu_num
+  ,sum(if(level3 not in ('淘汰', '淘汰类', '淘汰分类', '废弃', '废弃类', '淘汰款')
+                         and level1 not in ('批发辅材', '优惠券', '特价区', '淘汰'), 1, 0)) sku_num
   from sku_info_view siv
   where 1 = 1
   and level1 not in ('优惠券类')
