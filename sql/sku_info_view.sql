@@ -13,8 +13,9 @@ select pt1.p_name level1
 ,t.code product_code
 ,t.name product_name
 ,coalesce(pp.cost_price, 0) cost_price
-,coalesce(pp.sale_price, 0) sale_price
 ,coalesce(pp.wholesale_price, 0) wholesale_price
+,coalesce(pp.retail_price, 0) retail_price
+,coalesce(pp.sale_price, 0) sale_price
 ,t.created_at
 ,date_format(t.created_at, '%Y-%m-%d') dt
 ,t.site_id
@@ -139,8 +140,12 @@ left join (
    select product_id
    ,site_id
    ,buy_price cost_price
-   ,price0 sale_price
+   -- 零售价
+   ,price0 retail_price
+   -- 配送价
    ,price1 wholesale_price
+   -- 销售价
+   ,price3 sale_price
    from erp.product_price
    where site_id = 1251
 ) pp on pp.product_id = t.id

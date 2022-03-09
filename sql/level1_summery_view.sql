@@ -17,13 +17,27 @@ select spu_tbl.level1
 ,coalesce(order_202202_tbl.sale_qty, 0) sale_qty_2022_2
 ,coalesce(order_202203_tbl.gmv, 0) gmv_2022_3
 ,coalesce(order_202203_tbl.sale_qty, 0) sale_qty_2022_3
+,coalesce(order_202103_tbl.gmv, 0) gmv_2021_3
+,coalesce(order_202103_tbl.sale_qty, 0) sale_qty_2021_3
 from (
   select level1
+  -- 有销量或有库存的才算SPU数量
   ,count(distinct if(level3 not in ('淘汰', '淘汰类', '淘汰分类', '废弃', '废弃类', '淘汰款')
-                         and level1 not in ('批发辅材', '优惠券', '特价区', '淘汰'), spu_code, null)) spu_num
+                         and level1 not in ('批发辅材', '优惠券', '特价区', '淘汰')
+                         and (
+                             oiv.gmv > 0
+                             or skiv.stock_qty > 0
+                         ), spu_code, null)) spu_num
+  -- 有销量或有库存的才算SKU数量
   ,sum(if(level3 not in ('淘汰', '淘汰类', '淘汰分类', '废弃', '废弃类', '淘汰款')
-                         and level1 not in ('批发辅材', '优惠券', '特价区', '淘汰'), 1, 0)) sku_num
-  from sku_info_view siv
+                         and level1 not in ('批发辅材', '优惠券', '特价区', '淘汰')
+                         and (
+                             oiv.gmv > 0
+                             or skiv.stock_qty > 0
+                         ), 1, 0)) sku_num
+  from sku_info_view suiv
+  left join stock_info_view skiv on skiv.product_id = suiv.product_id
+  left join order_2022_info_view oiv on oiv.product_id = suiv.product_id
   where 1 = 1
   and level1 not in ('优惠券类')
   group by level1
@@ -82,4 +96,13 @@ left join (
     inner join order_202203_info_view oiv on oiv.product_id = suiv.product_id
     group by level1
 ) order_202203_tbl on order_202203_tbl.level1 = spu_tbl.level1
+-- 2021年03月销售情况
+left join (
+    select level1
+    ,sum(sale_qty) sale_qty
+    ,sum(gmv) gmv
+    from sku_info_view suiv
+    inner join order_202103_info_view oiv on oiv.product_id = suiv.product_id
+    group by level1
+) order_202103_tbl on order_202103_tbl.level1 = spu_tbl.level1
 ;
