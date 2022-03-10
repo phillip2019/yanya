@@ -885,3 +885,63 @@ from level1_summery_view
 ) st
 where 1 = 1
 ;
+
+
+-- 细分品类款式到店销售情况
+select *
+from (
+     select t1.level1
+    ,t1.level2
+    ,t1.level3
+    ,t1.spu_code
+    ,t1.spu_name
+    ,t1.gmv
+    ,t1.sale_qty
+    ,t1.stock_amt
+    ,if(t1.sale_qty = 0, 0, t1.gmv / t1.sale_qty) sale_price
+    ,if(@g=concat(t1.level1, '>', t1.level2, '>', t1.level3), @rank:=@rank + 1, @rank:=1) as rank
+    ,@g:=concat(t1.level1, '>', t1.level2, '>', t1.level3) as 'group'
+    from (
+          select siv.level1
+          ,siv.level2
+          ,siv.level3
+          ,siv.spu_code
+          ,max(siv.spu_name) siv.spu_name
+          ,sum(o3iv.gmv) gmv
+          ,sum(o3iv.sale_qty) sale_qty
+          ,sum(coalesce(siv.stock_amt, 0)) stock_amt
+          ,sum(coalesce(siv.stock_qty, 0)) stock_qty
+          from order_3d_info_view o3iv
+          inner join sku_info_view siv on siv.product_id = o3iv.product_id
+          left join stock_info_view skiv on skiv.product_id = siv.product_id
+          group by siv.level1
+          ,siv.level2
+          ,siv.level3
+          ,siv.spu_code
+          ,siv.spu_name
+          order by siv.level1
+          ,siv.level2
+          ,siv.level3
+          ,gmv desc
+    ) t1
+    ,(
+        select @rank:=0
+        ,@g:=NULL
+        ) t2
+    where 1 = 1
+) spu_3d_sale_tbl
+left join (
+    select suiv.level1
+    ,suiv.level2
+    ,suiv.level3
+    ,suiv.spu_code
+    ,max(suiv.spu_name) spu_name
+    ,sum(coalesce(siv.stock_amt, 0)) stock_amt
+    from sku_info_view suiv
+    inner join order_3d_info_view o3iv on suiv.product_id = o3iv.product_id
+    left join stock_info_view siv on suiv.product_id = siv.product_id
+    group by suiv.level1
+    ,suiv.level2
+    ,suiv.level3
+    ,suiv.spu_code
+)
