@@ -5,6 +5,7 @@ select s.product_id
 ,s.product_name
 ,sum(qty + lock_qty + coalesce(move_qty, 0)) stock_qty
 ,sum(round(coalesce(pp.wholesale_price * (qty + lock_qty + coalesce(move_qty, 0)), s.amt), 2)) stock_amt
+,min(if(warehouse_code in ('总部仓库', '总部调货仓库', '总部运营'), null, date_created)) shop_first_created_at
 from erp.stock s
 left join (
     select product_id

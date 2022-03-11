@@ -4,6 +4,7 @@ create view order_202203_info_view as
 select ppb.product_id
 ,sum(ppb.qty) sale_qty
 ,sum(ppb.amt) gmv
+,sum(if(pbi.date_created >= date_sub(now(), interval 3 day), ppb.amt, 0)) gmv_3d
 from erp.pos_bill_index pbi
 left join erp.pos_product_bill ppb on ppb.pos_bill_id = pbi.id
 where 1 = 1
