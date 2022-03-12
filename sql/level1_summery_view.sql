@@ -15,6 +15,8 @@ select spu_tbl.level1
 ,coalesce(order_202201_tbl.sale_qty, 0) sale_qty_2022_1
 ,coalesce(order_202202_tbl.gmv, 0) gmv_2022_2
 ,coalesce(order_202202_tbl.sale_qty, 0) sale_qty_2022_2
+,coalesce(order_202102_tbl.gmv, 0) gmv_2021_2
+,coalesce(order_202102_tbl.sale_qty, 0) sale_qty_2021_2
 ,coalesce(order_202203_tbl.gmv, 0) gmv_2022_3
 ,coalesce(order_202203_tbl.sale_qty, 0) sale_qty_2022_3
 ,coalesce(order_202103_tbl.gmv, 0) gmv_2021_3
@@ -87,6 +89,15 @@ left join (
     inner join order_202202_info_view oiv on oiv.product_id = suiv.product_id
     group by level1
 ) order_202202_tbl on order_202202_tbl.level1 = spu_tbl.level1
+-- 2021年02月销售情况
+left join (
+    select level1
+    ,sum(sale_qty) sale_qty
+    ,sum(gmv) gmv
+    from sku_info_view suiv
+    inner join order_202102_info_view oiv on oiv.product_id = suiv.product_id
+    group by level1
+) order_202102_tbl on order_202102_tbl.level1 = spu_tbl.level1
 -- 2022年03月销售情况
 left join (
     select level1

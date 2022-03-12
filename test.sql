@@ -953,3 +953,128 @@ and level1 not in ('淘汰')
 and level2 not in ('淘汰')
 and level3 not in ('淘汰')
 ;
+
+# 1667
+select *
+from supplier_info_view
+group by supplier_name
+having count(1) > 1
+;
+
+
+
+select *
+from bill_index
+where 1 = 1
+# and id = 897035
+and bill_type = 'RUKU'
+and state = 4
+group by state
+;
+
+
+drop view if exists bill_detail_info_view;
+create view bill_detail_info_view as
+select id bill_detail_id
+,bill_index_id bill_id
+,product_id
+,product_code
+,product_name
+,cast(qty as decimal(9, 0)) qty
+,coalesce(amount, 0) amt
+,coalesce(amount_disc, 0) distinct_amt
+,coalesce(net_amount, 0) tax_amt
+,cost_amount cost_amt
+,date_created created_at
+from product_bill
+;
+
+select *
+from product_bill
+;
+
+
+-- 进货金额，采购入库单确定
+drop view if exists purchase_product_info_view;
+create view purchase_product_info_view as
+select piv.purchase_id
+,piv.site_id
+,piv.site_name
+,piv.supplier_id
+,piv.supplier_code
+,piv.wh_id
+,piv.wh_code
+,piv.wh_name
+,piv.purchase_id
+,piv.purchase_code
+,piv.subject
+,bdiv.bill_detail_id
+,bdiv.product_id
+,bdiv.product_name
+,bdiv.product_code
+,qty
+,amt
+,piv.created_at
+from purchase_info_view piv
+left join bill_detail_info_View bdiv on bdiv.bill_id = piv.purchase_id
+;
+
+
+
+
+-- 进货金额表
+select piv.supplier_id
+,piv.supplier_code
+,piv.supplier_name
+,count(distinct siv.spu_code) spu_num
+,count(distinct piv.product_id) sku_num
+,sum(if(dt >= '2021-01-01' and dt < '2022-01-01', amt, 0)) purchase_2021_amt
+,sum(if(dt >= '2022-01-01' and dt < '2023-01-01', amt, 0)) purchase_2022_amt
+,sum(if(dt >= '2021-01-01' and dt < '2021-04-01', amt, 0)) purchase_2021_01_03_amt
+,sum(if(dt >= '2021-04-01' and dt < '2021-07-01', amt, 0)) purchase_2021_04_06_amt
+,sum(if(dt >= '2021-07-01' and dt < '2021-10-01', amt, 0)) purchase_2021_07_09_amt
+,sum(if(dt >= '2021-10-01' and dt < '2022-01-01', amt, 0)) purchase_2021_10_12_amt
+,sum(if(dt >= '2022-01-01' and dt < '2022-04-01', amt, 0)) purchase_2022_01_03_amt
+from purchase_product_info_view piv
+left join sku_info_view siv on siv.product_id = piv.product_id
+where 1 = 1
+and dt >= '2021-01-01'
+group by piv.supplier_id
+,piv.supplier_code
+,piv.supplier_name
+;
+
+-- 供应商商品销售金额
+select supplier_product_tbl.supplier_id
+,supplier_product_tbl.supplier_code
+,supplier_product_tbl.supplier_name
+,sum(if(dt >= '2021-01-01' and dt < '2022-01-01', gmv, 0)) gmv_2021
+,sum(if(dt >= '2022-01-01' and dt < '2023-01-01', gmv, 0)) gmv_2022
+,sum(if(dt >= '2021-01-01' and dt < '2021-04-01', gmv, 0)) gmv_2021_01_03
+,sum(if(dt >= '2021-04-01' and dt < '2021-07-01', gmv, 0)) gmv_2021_04_06
+,sum(if(dt >= '2021-07-01' and dt < '2021-10-01', gmv, 0)) gmv_2021_07_09
+,sum(if(dt >= '2021-10-01' and dt < '2022-01-01', gmv, 0)) gmv_2021_10_12
+,sum(if(dt >= '2022-01-01' and dt < '2022-04-01', gmv, 0)) gmv_2022_01_03
+from (
+    select supplier_id
+    ,piv.supplier_code
+    ,piv.supplier_name
+    ,piv.product_id
+    from purchase_product_info_view piv
+    where piv.created_at >= str_to_date('2021-01-01', '%Y-%m-%d %H:%i:%s')
+    group by supplier_id
+    ,piv.supplier_code
+    ,piv.supplier_name
+    ,piv.product_id
+) supplier_product_tbl
+left join order_info_td_view oiv on oiv.product_id = supplier_product_tbl.product_id
+where 1 = 1
+group by supplier_product_tbl.supplier_id
+,supplier_product_tbl.supplier_code
+,supplier_product_tbl.supplier_name
+;
+
+select *
+from bill_index
+where 1 = 1
+and bill_type = 'CHUKU2'
