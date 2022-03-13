@@ -16,6 +16,8 @@ select pt1.p_name level1
 ,coalesce(pp.wholesale_price, 0) wholesale_price
 ,coalesce(pp.retail_price, 0) retail_price
 ,coalesce(pp.sale_price, 0) sale_price
+,supplier_code
+,supplier_name
 ,t.created_at
 ,date_format(t.created_at, '%Y-%m-%d') dt
 ,t.site_id
@@ -32,6 +34,8 @@ from (
             ,substring(source_t.p_paths, 1, 8) p2_paths
             ,substring(source_t.p_paths, 1, 12) p3_paths
             ,substring(source_t.p_paths, 1, 16) p4_paths
+            ,supplier_code
+            ,supplier_name
         from (
                 select id
                 ,code
@@ -40,6 +44,8 @@ from (
                 ,paths
                 ,substring(paths, 1, length(paths) - 4) p_paths
                 ,site_id
+                ,main_supplier_code supplier_code
+                ,main_supplier_name supplier_name
                 from erp.product
                 where 1 = 1
                 and length(code) in (12, 16, 18, 19)
@@ -66,6 +72,8 @@ from (
                 ,substring(paths, 1, 8) p2_paths
                 ,substring(paths, 1, 12) p3_paths
                 ,substring(paths, 1, 16) p4_paths
+                ,main_supplier_code supplier_code
+                ,main_supplier_name supplier_name
                 from erp.product
                 where 1 = 1
                 and length(code) not in (12, 16, 18, 19)
@@ -101,6 +109,8 @@ from (
             ,substring(paths, 1, 8) p2_paths
             ,substring(paths, 1, 12) p3_paths
             ,substring(paths, 1, 16) p4_paths
+            ,supplier_code
+            ,supplier_name
         from (
                 select id
                 ,code
@@ -109,6 +119,8 @@ from (
                 ,create_date created_at
                 ,site_id
                 ,paths
+                ,main_supplier_code supplier_code
+                ,main_supplier_name supplier_name
                 from erp.product
                 where has_child = false
                 and create_date < str_to_date('2022-02-28', '%Y-%m-%d %H:%i:%s')
