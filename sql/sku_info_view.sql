@@ -151,15 +151,17 @@ left join (
 left join (
    select product_id
    ,site_id
-   ,buy_price cost_price
+   ,max(buy_price) cost_price
    -- 零售价
-   ,price0 retail_price
+   ,max(price0) retail_price
    -- 配送价
-   ,price1 wholesale_price
+   ,max(price1) wholesale_price
    -- 销售价
-   ,price3 sale_price
+   ,max(price3) sale_price
    from erp.product_price
    where site_id = 1251
+   group by product_id
+    ,site_id
 ) pp on pp.product_id = t.id
     and pp.site_id = t.site_id
 where 1 = 1

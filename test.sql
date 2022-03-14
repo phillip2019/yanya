@@ -1380,4 +1380,35 @@ and id = 830010
 
 select *
 from sku_info_view
+;
 
+select pfv.supplier_id
+,pfv.supplier_code
+,pfv.supplier_name
+,pfv.product_id
+,siv.level1
+,siv.level2
+,siv.level3
+from purchase_product_final_view pfv
+left join sku_info_view siv on siv.product_id = pfv.product_id
+group by
+;
+
+
+
+select *
+from supplier_product_summary_view
+where  1 = 1
+and supplier_code = '030426'
+;
+
+select product_id
+,supplier_code
+# ,site_id
+,count(1) num
+from purchase_product_info_view
+group by product_id
+,supplier_code
+# ,site_id
+having count(1) > 1
+;
