@@ -12,6 +12,7 @@ select pt1.p_name level1
 ,t.spu_name
 ,t.code product_code
 ,t.name product_name
+,t.stop_buy
 ,coalesce(pp.cost_price, 0) cost_price
 ,coalesce(pp.wholesale_price, 0) wholesale_price
 ,coalesce(pp.retail_price, 0) retail_price
@@ -28,6 +29,7 @@ from (
             ,source_t.id
             ,source_t.code
             ,source_t.name
+            ,source_t.stop_buy
             ,source_t.created_at
             ,source_t.site_id
             ,substring(source_t.p_paths, 1, 4) p1_paths
@@ -40,6 +42,8 @@ from (
                 select id
                 ,code
                 ,name
+                -- 虚拟采购表停止采购商品
+                ,stop_buy
                 ,create_date created_at
                 ,paths
                 ,substring(paths, 1, length(paths) - 4) p_paths
@@ -66,6 +70,7 @@ from (
                 ,id
                 ,code
                 ,name
+                ,stop_buy
                 ,create_date created_at
                 ,site_id
                 ,substring(paths, 1, 4) p1_paths
@@ -103,6 +108,7 @@ from (
             ,source_t2.id
             ,source_t2.code
             ,source_t2.full_name name
+            ,stop_buy
             ,source_t2.created_at
             ,source_t2.site_id
             ,substring(paths, 1, 4) p1_paths
@@ -116,6 +122,7 @@ from (
                 ,code
                 ,replace(replace(replace(name, '3对装/', ''), '2对装/', ''), '1对装/', '') name
                 ,name full_name
+                ,stop_buy
                 ,create_date created_at
                 ,site_id
                 ,paths

@@ -21,6 +21,10 @@ select spu_tbl.level1
 ,coalesce(order_202203_tbl.sale_qty, 0) sale_qty_2022_3
 ,coalesce(order_202103_tbl.gmv, 0) gmv_2021_3
 ,coalesce(order_202103_tbl.sale_qty, 0) sale_qty_2021_3
+,coalesce(order_202204_tbl.gmv, 0) gmv_2022_4
+,coalesce(order_202204_tbl.sale_qty, 0) sale_qty_2022_4
+,coalesce(order_202104_tbl.gmv, 0) gmv_2021_4
+,coalesce(order_202104_tbl.sale_qty, 0) sale_qty_2021_4
 from (
   select level1
   -- 有销量或有库存的才算SPU数量
@@ -116,4 +120,22 @@ left join (
     inner join order_202103_info_view oiv on oiv.product_id = suiv.product_id
     group by level1
 ) order_202103_tbl on order_202103_tbl.level1 = spu_tbl.level1
+-- 2022年04月销售情况
+left join (
+    select level1
+    ,sum(sale_qty) sale_qty
+    ,sum(gmv) gmv
+    from sku_info_view suiv
+    inner join order_202204_info_view oiv on oiv.product_id = suiv.product_id
+    group by level1
+) order_202204_tbl on order_202204_tbl.level1 = spu_tbl.level1
+-- 2021年04月销售情况
+left join (
+    select level1
+    ,sum(sale_qty) sale_qty
+    ,sum(gmv) gmv
+    from sku_info_view suiv
+    inner join order_202104_info_view oiv on oiv.product_id = suiv.product_id
+    group by level1
+) order_202104_tbl on order_202104_tbl.level1 = spu_tbl.level1
 ;
