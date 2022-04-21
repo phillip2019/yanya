@@ -22,6 +22,7 @@ select pt1.p_name level1
 ,t.created_at
 ,date_format(t.created_at, '%Y-%m-%d') dt
 ,t.site_id
+,pplv.purchase_latest_at
 from (
         -- 3月启用新spu-sku方案，按照新spu-sku方案加工, 查询18位的商品sku对应spu名称
         select coalesce(pt.p_code, source_t.code) spu_code
@@ -171,5 +172,6 @@ left join (
     ,site_id
 ) pp on pp.product_id = t.id
     and pp.site_id = t.site_id
+left join purchase_product_latest_view pplv on pplv.product_id = t.id
 where 1 = 1
 ;

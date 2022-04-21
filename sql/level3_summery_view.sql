@@ -43,6 +43,9 @@ from (
   left join order_3d_info_view oiv on oiv.product_id = suiv.product_id
   where 1 = 1
   and level1 not in ('优惠券类')
+  -- 排除停止采购的，只包含最后采购日期为最近2年的
+  and suiv.stop_buy = false
+  and suiv.purchase_latest_at >= date_sub(now(), INTERVAL 2 YEAR)
   group by level1
     ,level2
     ,level3
