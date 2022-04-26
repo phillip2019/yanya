@@ -3,6 +3,8 @@
 drop view if exists supplier_product_summary_view;
 create view supplier_product_summary_view as
 select supplier_purchase_tbl.level1
+,supplier_purchase_tbl.level2
+,supplier_purchase_tbl.level3
 ,supplier_purchase_tbl.supplier_id
 ,supplier_purchase_tbl.supplier_code
 ,supplier_purchase_tbl.supplier_name
@@ -37,8 +39,8 @@ select supplier_purchase_tbl.level1
 from (
      -- 进货金额表
     select siv.level1
-#     ,siv.level2
-#     ,siv.level3
+    ,siv.level2
+    ,siv.level3
     ,piv.supplier_id
     ,piv.supplier_code
     ,piv.supplier_name
@@ -63,17 +65,19 @@ from (
 
     where 1 = 1
     and dt >= '2021-01-01'
+    -- 排除停止采购的，只包含最后采购日期为最近2年的
+    and siv.purchase_latest_at >= date_sub(now(), INTERVAL 2 YEAR)
     group by siv.level1
-#     ,siv.level2
-#     ,siv.level3
+    ,siv.level2
+    ,siv.level3
     ,piv.supplier_id
     ,piv.supplier_code
     ,piv.supplier_name
 ) supplier_purchase_tbl
 left join (
     select oiv.level1
-#     ,oiv.level2
-#     ,oiv.level3
+    ,oiv.level2
+    ,oiv.level3
     ,supplier_product_tbl.supplier_id
     ,supplier_product_tbl.supplier_code
     ,supplier_product_tbl.supplier_name
@@ -96,21 +100,21 @@ left join (
                                     and oiv.supplier_code = supplier_product_tbl.supplier_code
     where 1 = 1
     group by oiv.level1
-#     ,oiv.level2
-#     ,oiv.level3
+    ,oiv.level2
+    ,oiv.level3
     ,supplier_product_tbl.supplier_id
     ,supplier_product_tbl.supplier_code
     ,supplier_product_tbl.supplier_name
 ) supplier_order_tbl on supplier_order_tbl.supplier_id = supplier_purchase_tbl.supplier_id
                     and supplier_order_tbl.level1 = supplier_purchase_tbl.level1
                     and supplier_order_tbl.supplier_code = supplier_purchase_tbl.supplier_code
-#                     and supplier_order_tbl.level2 = supplier_purchase_tbl.level2
-#                     and supplier_order_tbl.level3 = supplier_purchase_tbl.level3
+                    and supplier_order_tbl.level2 = supplier_purchase_tbl.level2
+                    and supplier_order_tbl.level3 = supplier_purchase_tbl.level3
 left join (
     -- 供应商退货金额
     select siv.level1
-#     ,siv.level2
-#     ,siv.level3
+    ,siv.level2
+    ,siv.level3
     ,supplier_product_tbl.supplier_id
     ,supplier_product_tbl.supplier_code
     ,supplier_product_tbl.supplier_name
@@ -132,21 +136,21 @@ left join (
     left join sku_info_view siv on siv.product_id = supplier_product_tbl.product_id
     where 1 = 1
     group by siv.level1
-#     ,siv.level2
-#     ,siv.level3
+    ,siv.level2
+    ,siv.level3
     ,supplier_product_tbl.supplier_id
     ,supplier_product_tbl.supplier_code
     ,supplier_product_tbl.supplier_name
 ) supplier_refund_tbl on supplier_refund_tbl.supplier_id = supplier_purchase_tbl.supplier_id
                          and supplier_refund_tbl.supplier_code = supplier_purchase_tbl.supplier_code
                          and supplier_refund_tbl.level1 = supplier_purchase_tbl.level1
-#                          and supplier_refund_tbl.level2 = supplier_purchase_tbl.level2
-#                          and supplier_refund_tbl.level3 = supplier_purchase_tbl.level3
+                         and supplier_refund_tbl.level2 = supplier_purchase_tbl.level2
+                         and supplier_refund_tbl.level3 = supplier_purchase_tbl.level3
 left join (
     -- 库存金额
     select skiv.level1
-#     ,skiv.level2
-#     ,skiv.level3
+    ,skiv.level2
+    ,skiv.level3
     ,supplier_product_tbl.supplier_id
     ,supplier_product_tbl.supplier_code
     ,supplier_product_tbl.supplier_name
@@ -163,15 +167,15 @@ left join (
     left join sku_info_view skiv on skiv.product_id = supplier_product_tbl.product_id
     where 1 = 1
     group by skiv.level1
-#     ,skiv.level2
-#     ,skiv.level3
+    ,skiv.level2
+    ,skiv.level3
     ,supplier_product_tbl.supplier_id
     ,supplier_product_tbl.supplier_code
     ,supplier_product_tbl.supplier_name
 ) supplier_stock_tbl on supplier_stock_tbl.supplier_id = supplier_purchase_tbl.supplier_id
                      and supplier_stock_tbl.level1 = supplier_purchase_tbl.level1
                      and supplier_stock_tbl.supplier_code = supplier_purchase_tbl.supplier_code
-#                      and supplier_refund_tbl.level2 = supplier_purchase_tbl.level2
-#                      and supplier_refund_tbl.level3 = supplier_purchase_tbl.level3
+                     and supplier_refund_tbl.level2 = supplier_purchase_tbl.level2
+                     and supplier_refund_tbl.level3 = supplier_purchase_tbl.level3
 where 1 = 1
 ;
