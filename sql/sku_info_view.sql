@@ -12,7 +12,7 @@ select pt1.p_name level1
 ,t.spu_name
 ,t.code product_code
 ,t.name product_name
-,t.stop_buy
+,if(t.stop_buy = true, '停止采购', '正常采购') stop_buy
 ,coalesce(pp.cost_price, 0) cost_price
 ,coalesce(pp.wholesale_price, 0) wholesale_price
 ,coalesce(pp.retail_price, 0) retail_price

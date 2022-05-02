@@ -19,6 +19,7 @@ select supplier_purchase_tbl.level1
 ,supplier_purchase_tbl.purchase_2021_07_09_amt
 ,supplier_purchase_tbl.purchase_2021_10_12_amt
 ,supplier_purchase_tbl.purchase_2022_01_03_amt
+,supplier_purchase_tbl.purchase_2022_04_06_amt
 ,coalesce(supplier_order_tbl.gmv_2021, 0) gmv_2021
 ,coalesce(supplier_order_tbl.gmv_2022, 0) gmv_2022
 ,coalesce(supplier_order_tbl.gmv_2021_01_03, 0) gmv_2021_01_03
@@ -26,7 +27,8 @@ select supplier_purchase_tbl.level1
 ,coalesce(supplier_order_tbl.gmv_2021_07_09, 0) gmv_2021_07_09
 ,coalesce(supplier_order_tbl.gmv_2021_10_12, 0) gmv_2021_10_12
 ,coalesce(supplier_order_tbl.gmv_2022_01_03, 0) gmv_2022_01_03
-,coalesce(supplier_order_tbl.gmv_2022_03, 0) gmv_2022_03
+,coalesce(supplier_order_tbl.gmv_2022_04_06, 0) gmv_2022_04_06
+,coalesce(supplier_order_tbl.gmv_2022_04, 0) gmv_2022_04
 ,coalesce(supplier_refund_tbl.refund_amt_2021, 0) refund_amt_2021
 ,coalesce(supplier_refund_tbl.refund_amt_2022, 0) refund_amt_2022
 ,coalesce(supplier_refund_tbl.refund_amt_2021_01_03, 0) refund_amt_2021_01_03
@@ -34,6 +36,7 @@ select supplier_purchase_tbl.level1
 ,coalesce(supplier_refund_tbl.refund_amt_2021_07_09, 0) refund_amt_2021_07_09
 ,coalesce(supplier_refund_tbl.refund_amt_2021_10_12, 0) refund_amt_2021_10_12
 ,coalesce(supplier_refund_tbl.refund_amt_2022_01_03, 0) refund_amt_2022_01_03
+,coalesce(supplier_refund_tbl.refund_amt_2022_04_06, 0) refund_amt_2022_04_06
 ,coalesce(supplier_stock_tbl.stock_amt, 0) stock_amt
 ,coalesce(supplier_stock_tbl.stock_qty, 0) stock_qty
 from (
@@ -59,6 +62,7 @@ from (
     ,sum(if(dt >= '2021-07-01' and dt < '2021-10-01', amt, 0)) purchase_2021_07_09_amt
     ,sum(if(dt >= '2021-10-01' and dt < '2022-01-01', amt, 0)) purchase_2021_10_12_amt
     ,sum(if(dt >= '2022-01-01' and dt < '2022-04-01', amt, 0)) purchase_2022_01_03_amt
+    ,sum(if(dt >= '2022-04-01' and dt < '2022-07-01', amt, 0)) purchase_2022_04_06_amt
     from purchase_product_info_view piv
     left join sku_info_view siv on siv.product_id = piv.product_id
                                    and siv.supplier_code = piv.supplier_code
@@ -88,7 +92,8 @@ left join (
     ,sum(if(dt >= '2021-07-01' and dt < '2021-10-01', gmv, 0)) gmv_2021_07_09
     ,sum(if(dt >= '2021-10-01' and dt < '2022-01-01', gmv, 0)) gmv_2021_10_12
     ,sum(if(dt >= '2022-01-01' and dt < '2022-04-01', gmv, 0)) gmv_2022_01_03
-    ,sum(if(dt >= '2022-03-01' and dt < '2022-04-01', gmv, 0)) gmv_2022_03
+    ,sum(if(dt >= '2022-04-01' and dt < '2022-07-01', gmv, 0)) gmv_2022_04_06
+    ,sum(if(dt >= '2022-04-01' and dt < '2022-05-01', gmv, 0)) gmv_2022_04
     from (
         select supplier_id
         ,supplier_code
@@ -125,6 +130,7 @@ left join (
     ,sum(if(itv.dt >= '2021-07-01' and itv.dt < '2021-10-01', refund_amt, 0)) refund_amt_2021_07_09
     ,sum(if(itv.dt >= '2021-10-01' and itv.dt < '2022-01-01', refund_amt, 0)) refund_amt_2021_10_12
     ,sum(if(itv.dt >= '2022-01-01' and itv.dt < '2022-04-01', refund_amt, 0)) refund_amt_2022_01_03
+    ,sum(if(itv.dt >= '2022-04-01' and itv.dt < '2022-07-01', refund_amt, 0)) refund_amt_2022_04_06
     from (
         select supplier_id
         ,supplier_code

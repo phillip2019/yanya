@@ -13,7 +13,7 @@ select level1
 ,sale_qty
 ,stock_amt
 ,stock_qty
-,gmv / stock_amt stock_sale_rate
+,stock_amt / gmv  stock_sale_rate
 ,arrival_shop_days
 from (
      select t1.level1
@@ -41,21 +41,21 @@ from (
           ,max(siv.spu_name) spu_name
           ,max(siv.stop_buy) stop_buy
           ,max(purchase_latest_at) purchase_latest_at
-          ,sum(coalesce(o3iv.gmv, 0)) gmv
-          ,sum(coalesce(o3iv.gmv_3d, 0)) gmv_3d
-          ,sum(coalesce(o3iv.sale_qty, 0)) sale_qty
+          ,sum(coalesce(oiv.gmv, 0)) gmv
+          ,sum(coalesce(oiv.gmv_3d, 0)) gmv_3d
+          ,sum(coalesce(oiv.sale_qty, 0)) sale_qty
           ,sum(coalesce(skiv.stock_amt, 0)) stock_amt
           ,sum(coalesce(skiv.stock_qty, 0)) stock_qty
           ,max(TIMESTAMPDIFF(DAY ,coalesce(skiv.shop_first_created_at, now()), now())) arrival_shop_days
           ,count(distinct siv.product_code) sku_num
           from sku_info_view siv
           left join stock_info_view skiv on siv.product_id = skiv.product_id
-          left join order_202203_info_view o3iv on o3iv.product_id = siv.product_id
+          left join order_cur_mon_info_view oiv on oiv.product_id = siv.product_id
           where 1 = 1
           -- 最后采购时间为两年前的过滤
           and purchase_latest_at >= date_sub(now(), INTERVAL 2 YEAR)
           and (
-            coalesce (o3iv.gmv, 0) > 0
+            coalesce (oiv.gmv, 0) > 0
             or coalesce(skiv.stock_amt, 0) > 0
           )
           group by siv.level1

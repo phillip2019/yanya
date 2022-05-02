@@ -20,6 +20,14 @@ select spu_tbl.level1
 ,coalesce(order_202203_tbl.sale_qty, 0) sale_qty_2022_3
 ,coalesce(order_202103_tbl.gmv, 0) gmv_2021_3
 ,coalesce(order_202103_tbl.sale_qty, 0) sale_qty_2021_3
+,coalesce(order_202204_tbl.gmv, 0) gmv_2022_4
+,coalesce(order_202204_tbl.sale_qty, 0) sale_qty_2022_4
+,coalesce(order_202104_tbl.gmv, 0) gmv_2021_4
+,coalesce(order_202104_tbl.sale_qty, 0) sale_qty_2021_4
+,coalesce(order_202205_tbl.gmv, 0) gmv_2022_5
+,coalesce(order_202205_tbl.sale_qty, 0) sale_qty_2022_5
+,coalesce(order_202105_tbl.gmv, 0) gmv_2021_5
+,coalesce(order_202105_tbl.sale_qty, 0) sale_qty_2021_5
 from (
   select level1
   ,level2
@@ -44,7 +52,7 @@ from (
   where 1 = 1
   and level1 not in ('优惠券类')
   -- 排除停止采购的，只包含最后采购日期为最近2年的
-  and suiv.stop_buy = false
+  and suiv.stop_buy = '正常采购'
   and suiv.purchase_latest_at >= date_sub(now(), INTERVAL 2 YEAR)
   group by level1
     ,level2
@@ -184,4 +192,66 @@ left join (
 ) order_202103_tbl on order_202103_tbl.level1 = spu_tbl.level1
                   and order_202103_tbl.level2 = spu_tbl.level2
                   and order_202103_tbl.level3 = spu_tbl.level3
+-- 2022年04月销售情况
+left join (
+    select level1
+         ,level2
+         ,level3
+    ,sum(sale_qty) sale_qty
+    ,sum(gmv) gmv
+    from sku_info_view suiv
+    inner join order_202204_info_view oiv on oiv.product_id = suiv.product_id
+    where 1 = 1
+    group by level1
+          ,level2
+          ,level3
+) order_202204_tbl on order_202204_tbl.level1 = spu_tbl.level1
+                  and order_202204_tbl.level2 = spu_tbl.level2
+                  and order_202204_tbl.level3 = spu_tbl.level3
+-- 2021年04月销售情况
+left join (
+    select level1
+           ,level2
+           ,level3
+    ,sum(sale_qty) sale_qty
+    ,sum(gmv) gmv
+    from sku_info_view suiv
+    inner join order_202104_info_view oiv on oiv.product_id = suiv.product_id
+    group by level1
+            ,level2
+            ,level3
+) order_202104_tbl on order_202104_tbl.level1 = spu_tbl.level1
+                  and order_202104_tbl.level2 = spu_tbl.level2
+                  and order_202104_tbl.level3 = spu_tbl.level3
+-- 2022年05月销售情况
+left join (
+    select level1
+         ,level2
+         ,level3
+    ,sum(sale_qty) sale_qty
+    ,sum(gmv) gmv
+    from sku_info_view suiv
+    inner join order_202205_info_view oiv on oiv.product_id = suiv.product_id
+    where 1 = 1
+    group by level1
+          ,level2
+          ,level3
+) order_202205_tbl on order_202205_tbl.level1 = spu_tbl.level1
+                  and order_202205_tbl.level2 = spu_tbl.level2
+                  and order_202205_tbl.level3 = spu_tbl.level3
+-- 2021年05月销售情况
+left join (
+    select level1
+           ,level2
+           ,level3
+    ,sum(sale_qty) sale_qty
+    ,sum(gmv) gmv
+    from sku_info_view suiv
+    inner join order_202105_info_view oiv on oiv.product_id = suiv.product_id
+    group by level1
+            ,level2
+            ,level3
+) order_202105_tbl on order_202105_tbl.level1 = spu_tbl.level1
+                  and order_202105_tbl.level2 = spu_tbl.level2
+                  and order_202105_tbl.level3 = spu_tbl.level3
 ;
