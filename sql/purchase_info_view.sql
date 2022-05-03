@@ -1,4 +1,4 @@
--- 采购入库单
+-- 采购通知单
 -- 单据明细
 drop view if exists purchase_info_view;
 create view purchase_info_view as
@@ -31,5 +31,7 @@ select id purchase_id
 ,pass_date pass_at
 from bill_index
 where 1 = 1
-and bill_type = 'RUKU'
+-- 选择采购通知单作为采购入库采购金额计算标准
+and bill_type = 'PO2'
+and state = 5
 ;

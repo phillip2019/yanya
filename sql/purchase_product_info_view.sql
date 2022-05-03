@@ -27,3 +27,11 @@ from purchase_info_view piv
 left join bill_detail_info_View bdiv on bdiv.bill_id = piv.purchase_id
 left join supplier_info_view siv on siv.supplier_id = piv.supplier_id
 ;
+
+
+
+select sum(amt) total_amt
+from purchase_product_info_view
+where supplier_code = '030791'
+and created_at >= str_to_date('2021-01-01', '%Y-%m-%d %H:%i:%s')
+and created_at < str_to_date('2022-01-01', '%Y-%m-%d %H:%i:%s')

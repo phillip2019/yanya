@@ -55,18 +55,17 @@ from (
                        and siv.created_at < str_to_date('2023-01-01', '%Y-%m-%d %H:%i:%s'), siv.spu_code, null)) spu_2022_num
     ,count(distinct if(siv.created_at >= str_to_date('2022-01-01', '%Y-%m-%d %H:%i:%s')
                        and siv.created_at < str_to_date('2023-01-01', '%Y-%m-%d %H:%i:%s'), piv.product_id, null)) sku_2022_num
-    ,sum(if(dt >= '2021-01-01' and dt < '2022-01-01', amt, 0)) purchase_2021_amt
-    ,sum(if(dt >= '2022-01-01' and dt < '2023-01-01', amt, 0)) purchase_2022_amt
-    ,sum(if(dt >= '2021-01-01' and dt < '2021-04-01', amt, 0)) purchase_2021_01_03_amt
-    ,sum(if(dt >= '2021-04-01' and dt < '2021-07-01', amt, 0)) purchase_2021_04_06_amt
-    ,sum(if(dt >= '2021-07-01' and dt < '2021-10-01', amt, 0)) purchase_2021_07_09_amt
-    ,sum(if(dt >= '2021-10-01' and dt < '2022-01-01', amt, 0)) purchase_2021_10_12_amt
-    ,sum(if(dt >= '2022-01-01' and dt < '2022-04-01', amt, 0)) purchase_2022_01_03_amt
-    ,sum(if(dt >= '2022-04-01' and dt < '2022-07-01', amt, 0)) purchase_2022_04_06_amt
+    ,sum(if(piv.created_at >= str_to_date('2021-01-01', '%Y-%m-%d %H:%i:%s') and piv.created_at < str_to_date('2022-01-01', '%Y-%m-%d %H:%i:%s'), amt, 0)) purchase_2021_amt
+    ,sum(if(piv.created_at >= str_to_date('2022-01-01', '%Y-%m-%d %H:%i:%s') and piv.created_at < str_to_date('2023-01-01', '%Y-%m-%d %H:%i:%s'), amt, 0)) purchase_2022_amt
+    ,sum(if(piv.created_at >= str_to_date('2021-01-01', '%Y-%m-%d %H:%i:%s') and piv.created_at < str_to_date('2021-04-01', '%Y-%m-%d %H:%i:%s'), amt, 0)) purchase_2021_01_03_amt
+    ,sum(if(piv.created_at >= str_to_date('2021-04-01', '%Y-%m-%d %H:%i:%s') and piv.created_at < str_to_date('2021-07-01', '%Y-%m-%d %H:%i:%s'), amt, 0)) purchase_2021_04_06_amt
+    ,sum(if(piv.created_at >= str_to_date('2021-07-01', '%Y-%m-%d %H:%i:%s') and piv.created_at < str_to_date('2021-10-01', '%Y-%m-%d %H:%i:%s'), amt, 0)) purchase_2021_07_09_amt
+    ,sum(if(piv.created_at >= str_to_date('2021-10-01', '%Y-%m-%d %H:%i:%s') and piv.created_at < str_to_date('2022-01-01', '%Y-%m-%d %H:%i:%s'), amt, 0)) purchase_2021_10_12_amt
+    ,sum(if(piv.created_at >= str_to_date('2022-01-01', '%Y-%m-%d %H:%i:%s') and piv.created_at < str_to_date('2022-04-01', '%Y-%m-%d %H:%i:%s'), amt, 0)) purchase_2022_01_03_amt
+    ,sum(if(piv.created_at >= str_to_date('2022-04-01', '%Y-%m-%d %H:%i:%s') and piv.created_at < str_to_date('2022-07-01', '%Y-%m-%d %H:%i:%s'), amt, 0)) purchase_2022_04_06_amt
     from purchase_product_info_view piv
     left join sku_info_view siv on siv.product_id = piv.product_id
                                    and siv.supplier_code = piv.supplier_code
-
     where 1 = 1
     and dt >= '2021-01-01'
     -- 排除停止采购的，只包含最后采购日期为最近2年的
@@ -103,6 +102,7 @@ left join (
     ) supplier_product_tbl
     left join order_info_td_view oiv on oiv.product_id = supplier_product_tbl.product_id
                                     and oiv.supplier_code = supplier_product_tbl.supplier_code
+                                    and oiv.supplier_name = supplier_product_tbl.supplier_name
     where 1 = 1
     group by oiv.level1
     ,oiv.level2
@@ -110,11 +110,12 @@ left join (
     ,supplier_product_tbl.supplier_id
     ,supplier_product_tbl.supplier_code
     ,supplier_product_tbl.supplier_name
-) supplier_order_tbl on supplier_order_tbl.supplier_id = supplier_purchase_tbl.supplier_id
-                    and supplier_order_tbl.level1 = supplier_purchase_tbl.level1
-                    and supplier_order_tbl.supplier_code = supplier_purchase_tbl.supplier_code
+) supplier_order_tbl on supplier_order_tbl.level1 = supplier_purchase_tbl.level1
                     and supplier_order_tbl.level2 = supplier_purchase_tbl.level2
                     and supplier_order_tbl.level3 = supplier_purchase_tbl.level3
+                    and supplier_order_tbl.supplier_id = supplier_purchase_tbl.supplier_id
+                    and supplier_order_tbl.supplier_code = supplier_purchase_tbl.supplier_code
+                    and supplier_order_tbl.supplier_name = supplier_purchase_tbl.supplier_name
 left join (
     -- 供应商退货金额
     select siv.level1
@@ -140,6 +141,7 @@ left join (
     ) supplier_product_tbl
     left join refund_order_info_td_view itv on itv.product_id = supplier_product_tbl.product_id
     left join sku_info_view siv on siv.product_id = supplier_product_tbl.product_id
+                                   and siv.supplier_name = supplier_product_tbl.supplier_name
     where 1 = 1
     group by siv.level1
     ,siv.level2
@@ -147,11 +149,12 @@ left join (
     ,supplier_product_tbl.supplier_id
     ,supplier_product_tbl.supplier_code
     ,supplier_product_tbl.supplier_name
-) supplier_refund_tbl on supplier_refund_tbl.supplier_id = supplier_purchase_tbl.supplier_id
-                         and supplier_refund_tbl.supplier_code = supplier_purchase_tbl.supplier_code
-                         and supplier_refund_tbl.level1 = supplier_purchase_tbl.level1
+) supplier_refund_tbl on supplier_refund_tbl.level1 = supplier_purchase_tbl.level1
                          and supplier_refund_tbl.level2 = supplier_purchase_tbl.level2
                          and supplier_refund_tbl.level3 = supplier_purchase_tbl.level3
+                         and supplier_refund_tbl.supplier_id = supplier_purchase_tbl.supplier_id
+                         and supplier_refund_tbl.supplier_code = supplier_purchase_tbl.supplier_code
+                         and supplier_refund_tbl.supplier_name = supplier_purchase_tbl.supplier_name
 left join (
     -- 库存金额
     select skiv.level1
@@ -171,6 +174,7 @@ left join (
     ) supplier_product_tbl
     left join stock_info_view siv on siv.product_id = supplier_product_tbl.product_id
     left join sku_info_view skiv on skiv.product_id = supplier_product_tbl.product_id
+                                  and skiv.supplier_name = supplier_product_tbl.supplier_name
     where 1 = 1
     group by skiv.level1
     ,skiv.level2
@@ -178,10 +182,11 @@ left join (
     ,supplier_product_tbl.supplier_id
     ,supplier_product_tbl.supplier_code
     ,supplier_product_tbl.supplier_name
-) supplier_stock_tbl on supplier_stock_tbl.supplier_id = supplier_purchase_tbl.supplier_id
-                     and supplier_stock_tbl.level1 = supplier_purchase_tbl.level1
-                     and supplier_stock_tbl.supplier_code = supplier_purchase_tbl.supplier_code
+) supplier_stock_tbl on  supplier_stock_tbl.level1 = supplier_purchase_tbl.level1
                      and supplier_refund_tbl.level2 = supplier_purchase_tbl.level2
                      and supplier_refund_tbl.level3 = supplier_purchase_tbl.level3
+                     and supplier_stock_tbl.supplier_id = supplier_purchase_tbl.supplier_id
+                     and supplier_stock_tbl.supplier_code = supplier_purchase_tbl.supplier_code
+                     and supplier_stock_tbl.supplier_name = supplier_purchase_tbl.supplier_name
 where 1 = 1
 ;
