@@ -67,6 +67,7 @@ from (
     left join sku_info_view siv on siv.product_id = piv.product_id
                                    and siv.supplier_code = piv.supplier_code
     where 1 = 1
+#     and piv.supplier_code = '030791'
     and dt >= '2021-01-01'
     -- 排除停止采购的，只包含最后采购日期为最近2年的
     and siv.purchase_latest_at >= date_sub(now(), INTERVAL 2 YEAR)
@@ -100,10 +101,10 @@ left join (
         ,product_id
         from purchase_product_final_view
     ) supplier_product_tbl
-    left join order_info_td_view oiv on oiv.product_id = supplier_product_tbl.product_id
+    inner join order_info_td_view oiv on oiv.product_id = supplier_product_tbl.product_id
                                     and oiv.supplier_code = supplier_product_tbl.supplier_code
-                                    and oiv.supplier_name = supplier_product_tbl.supplier_name
     where 1 = 1
+#     and supplier_product_tbl.supplier_code = '030791'
     group by oiv.level1
     ,oiv.level2
     ,oiv.level3
@@ -140,9 +141,10 @@ left join (
         from purchase_product_final_view
     ) supplier_product_tbl
     left join refund_order_info_td_view itv on itv.product_id = supplier_product_tbl.product_id
-    left join sku_info_view siv on siv.product_id = supplier_product_tbl.product_id
+    inner join sku_info_view siv on siv.product_id = supplier_product_tbl.product_id
                                    and siv.supplier_name = supplier_product_tbl.supplier_name
     where 1 = 1
+#     and supplier_product_tbl.supplier_code = '030791'
     group by siv.level1
     ,siv.level2
     ,siv.level3
@@ -173,9 +175,10 @@ left join (
         from purchase_product_final_view
     ) supplier_product_tbl
     left join stock_info_view siv on siv.product_id = supplier_product_tbl.product_id
-    left join sku_info_view skiv on skiv.product_id = supplier_product_tbl.product_id
+    inner join sku_info_view skiv on skiv.product_id = supplier_product_tbl.product_id
                                   and skiv.supplier_name = supplier_product_tbl.supplier_name
     where 1 = 1
+    and supplier_product_tbl.supplier_code = '030791'
     group by skiv.level1
     ,skiv.level2
     ,skiv.level3
@@ -183,8 +186,8 @@ left join (
     ,supplier_product_tbl.supplier_code
     ,supplier_product_tbl.supplier_name
 ) supplier_stock_tbl on  supplier_stock_tbl.level1 = supplier_purchase_tbl.level1
-                     and supplier_refund_tbl.level2 = supplier_purchase_tbl.level2
-                     and supplier_refund_tbl.level3 = supplier_purchase_tbl.level3
+                     and supplier_stock_tbl.level2 = supplier_purchase_tbl.level2
+                     and supplier_stock_tbl.level3 = supplier_purchase_tbl.level3
                      and supplier_stock_tbl.supplier_id = supplier_purchase_tbl.supplier_id
                      and supplier_stock_tbl.supplier_code = supplier_purchase_tbl.supplier_code
                      and supplier_stock_tbl.supplier_name = supplier_purchase_tbl.supplier_name
